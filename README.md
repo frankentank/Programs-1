@@ -1,3 +1,5 @@
+#GitHub user id: frankentank
+
 # Programs
 Base code for program assignments in Software Development (C S 371). 
 
@@ -9,3 +11,6 @@ This assignment relies on the Coverage programs.
 
 ## Program 4
 This assignment relies on the Circles programs. 
+
+## Lab 1
+This lab is for setting up and getting familiar with GitHub.
