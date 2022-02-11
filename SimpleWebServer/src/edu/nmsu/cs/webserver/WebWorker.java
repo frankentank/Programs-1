@@ -25,6 +25,8 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.File;
+import java.util.Scanner;
 import java.net.Socket;
 import java.text.DateFormat;
 import java.util.Date;
@@ -33,68 +35,76 @@ import java.util.TimeZone;
 public class WebWorker implements Runnable
 {
 
-	private Socket socket;
+   private Socket socket;
 
 	/**
 	 * Constructor: must have a valid open socket
 	 **/
-	public WebWorker(Socket s)
-	{
-		socket = s;
-	}
+   public WebWorker(Socket s)
+   {
+      socket = s;
+   }
 
 	/**
 	 * Worker thread starting point. Each worker handles just one HTTP request and then returns, which
 	 * destroys the thread. This method assumes that whoever created the worker created it with a
 	 * valid open socket object.
 	 **/
-	public void run()
-	{
-		System.err.println("Handling connection...");
-		try
-		{
-			InputStream is = socket.getInputStream();
-			OutputStream os = socket.getOutputStream();
-			readHTTPRequest(is);
-			writeHTTPHeader(os, "text/html");
-			writeContent(os);
-			os.flush();
-			socket.close();
-		}
-		catch (Exception e)
-		{
-			System.err.println("Output error: " + e);
-		}
-		System.err.println("Done handling connection.");
-		return;
-	}
+   public void run() {
+      System.err.println("Handling connection...");
+      try
+      {  
+         
+         File file; 
+         boolean found; 
+         InputStream is = socket.getInputStream();
+         OutputStream os = socket.getOutputStream();
+         file = readHTTPRequest(is);
+         System.out.println(file.length());
+         found = file.exists();
+         
+         writeHTTPHeader(os, "text/html", found);
+         writeContent(os, found, file);
+         os.flush();
+         socket.close();
+      }
+      catch (Exception e)
+      {
+         System.err.println("Output error: " + e);
+      }
+      System.err.println("Done handling connection.");
+      return;
+   } //end run
 
 	/**
 	 * Read the HTTP request header.
 	 **/
-	private void readHTTPRequest(InputStream is)
-	{
-		String line;
-		BufferedReader r = new BufferedReader(new InputStreamReader(is));
-		while (true)
-		{
-			try
-			{
-				while (!r.ready())
-					Thread.sleep(1);
-				line = r.readLine();
-				System.err.println("Request line: (" + line + ")");
-				if (line.length() == 0)
-					break;
-			}
-			catch (Exception e)
-			{
-				System.err.println("Request error: " + e);
-				break;
-			}
-		}
-		return;
-	}
+   private File readHTTPRequest(InputStream is) {
+      File file = null;
+      String line;
+      BufferedReader r = new BufferedReader(new InputStreamReader(is));
+      while (true) {
+         try {
+            while (!r.ready())
+               Thread.sleep(1);
+            line = r.readLine();
+            System.err.println("Request line: (" + line + ")");
+            
+            if (line.startsWith("GET")) {
+               file = new File("C:\\Users\\frank\\Documents\\School shit\\CS371\\Programs-1\\SimpleWebServer" +
+                                 line.substring(4, line.indexOf("HTTP")));
+            } //end if 
+            
+            if (line.length() == 0)
+               break;
+         } //end try
+         catch (Exception e) {
+            System.err.println("Request error: " + e);
+            break;
+         } //end catch
+      } //end while
+      return file;
+   } //end readHTTPRequest
 
 	/**
 	 * Write the HTTP header lines to the client network connection.
@@ -104,24 +114,31 @@ public class WebWorker implements Runnable
 	 * @param contentType
 	 *          is the string MIME content type (e.g. "text/html")
 	 **/
-	private void writeHTTPHeader(OutputStream os, String contentType) throws Exception
-	{
-		Date d = new Date();
-		DateFormat df = DateFormat.getDateTimeInstance();
-		df.setTimeZone(TimeZone.getTimeZone("GMT"));
-		os.write("HTTP/1.1 200 OK\n".getBytes());
-		os.write("Date: ".getBytes());
-		os.write((df.format(d)).getBytes());
-		os.write("\n".getBytes());
-		os.write("Server: Jon's very own server\n".getBytes());
-		// os.write("Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT\n".getBytes());
-		// os.write("Content-Length: 438\n".getBytes());
-		os.write("Connection: close\n".getBytes());
-		os.write("Content-Type: ".getBytes());
-		os.write(contentType.getBytes());
-		os.write("\n\n".getBytes()); // HTTP header ends with 2 newlines
-		return;
-	}
+   private void writeHTTPHeader(OutputStream os, String contentType, boolean found) throws Exception {
+      String status;
+      Date d = new Date();
+      DateFormat df = DateFormat.getDateTimeInstance();
+      df.setTimeZone(TimeZone.getTimeZone("GMT"));
+      
+      if (found) {
+         status = "200 OK";
+      } //end if
+      else { // not found
+         status = "404 Not Found";
+      } //end else 
+      os.write(("HTTP/1.1 " + status + "\n").getBytes());
+      os.write("Date: ".getBytes());
+      os.write((df.format(d)).getBytes());
+      os.write("\n".getBytes());
+      os.write("Server: Jon's very own server\n".getBytes());
+   	// os.write("Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT\n".getBytes());
+   	// os.write("Content-Length: 438\n".getBytes());
+      os.write("Connection: close\n".getBytes());
+      os.write("Content-Type: ".getBytes());
+      os.write(contentType.getBytes());
+      os.write("\n\n".getBytes()); // HTTP header ends with 2 newlines
+      return;
+   }
 
 	/**
 	 * Write the data content to the client network connection. This MUST be done after the HTTP
@@ -129,12 +146,57 @@ public class WebWorker implements Runnable
 	 * 
 	 * @param os
 	 *          is the OutputStream object to write to
+    * @param found
+    *          is the status of whether the requested file was found or not
 	 **/
-	private void writeContent(OutputStream os) throws Exception
-	{
-		os.write("<html><head></head><body>\n".getBytes());
-		os.write("<h3>My web server works!</h3>\n".getBytes());
-		os.write("</body></html>\n".getBytes());
-	}
+   private void writeContent(OutputStream os, boolean found, File file) throws Exception {
+   
+      //System.out.println(file.length());
+      if (found) { 
+         if (file.length() == 0) { //found and empty
+            os.write("<html><head></head><body>\n".getBytes());
+            os.write(("<h3>My web server works!</h3>\n").getBytes());
+            os.write("</body></html>\n".getBytes());
+         } //end if
+         else { //found and not empty
+            Scanner filescan = new Scanner(file);
+            String input;
+            while (filescan.hasNext()) {
+               input = filescan.nextLine();
+               input = replaceTags(input);
+               os.write(input.getBytes());
+            } //end while
+         } //end else
+      } //end if
+      else { //not found
+         os.write("<html><head></head><body>\n".getBytes());
+         os.write(("<h3>404 source not found</h3>\n").getBytes());
+         os.write("</body></html>\n".getBytes());
+      } //end else
+      
+   
+   } //end writeContent
+   
+   public static String replaceTags(String input) {
+      int date, server;
+      String i = input;
+      
+      Date d = new Date();
+      DateFormat df = DateFormat.getDateTimeInstance();
+      // df.setTimeZone(TimeZone.getTimeZone("GMT"));
+      
+      date = i.indexOf("<cs371date>");
+      
+      if (date != -1) {
+         i = i.replace((CharSequence) "<cs371date>", (CharSequence) df.format(d));
+      } //end if
+      
+      server = i.indexOf("<cs371server>");
+      if (server != -1) {
+         i = i.replace((CharSequence) "<cs371server>", (CharSequence) "FrankenServer");
+      } //end if 
+      
+      return i;
+   } //end replaceTags
 
 } // end class
