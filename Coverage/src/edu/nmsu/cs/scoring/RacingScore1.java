@@ -1,4 +1,4 @@
-package edu.nmsu.cs.scoring;
+package src.edu.nmsu.cs.scoring;
 
 /***
  * Olympic Dragon Racing Scoring Class
