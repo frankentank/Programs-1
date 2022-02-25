@@ -57,6 +57,8 @@ public class WebWorker implements Runnable
          
          File file; 
          boolean found; 
+         String ContentType;
+         
          InputStream is = socket.getInputStream();
          OutputStream os = socket.getOutputStream();
          file = readHTTPRequest(is);
@@ -91,7 +93,7 @@ public class WebWorker implements Runnable
             System.err.println("Request line: (" + line + ")");
             
             if (line.startsWith("GET")) {
-               file = new File("C:\\Users\\frank\\Documents\\School shit\\CS371\\Programs-1\\SimpleWebServer" +
+               file = new File("C:\\Users\\frank\\Documents\\School stuff\\CS371\\Programs-1\\SimpleWebServer" +
                                  line.substring(4, line.indexOf("HTTP")));
             } //end if 
             
