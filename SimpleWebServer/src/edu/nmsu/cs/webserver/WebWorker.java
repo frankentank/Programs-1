@@ -31,6 +31,7 @@ import java.net.Socket;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+import java.io.FileInputStream;
 
 public class WebWorker implements Runnable
 {
@@ -52,21 +53,23 @@ public class WebWorker implements Runnable
 	 **/
    public void run() {
       System.err.println("Handling connection...");
-      try
-      {  
+      try {  
          
          File file; 
          boolean found; 
-         String ContentType;
+         String filePath, contentType;
          
          InputStream is = socket.getInputStream();
          OutputStream os = socket.getOutputStream();
          file = readHTTPRequest(is);
          System.out.println(file.length());
          found = file.exists();
+         filePath = file.getAbsolutePath();
+         contentType = getContentType(filePath);
          
-         writeHTTPHeader(os, "text/html", found);
-         writeContent(os, found, file);
+         
+         writeHTTPHeader(os, contentType, found);
+         writeContent(os, found, contentType, file);
          os.flush();
          socket.close();
       }
@@ -77,6 +80,22 @@ public class WebWorker implements Runnable
       System.err.println("Done handling connection.");
       return;
    } //end run
+   
+   /**
+	 * Get the content type based on the filepath
+	 **/
+   public static String getContentType(String filePath) {
+      String temp, contentType;
+      
+      temp = filePath.substring(filePath.indexOf(".") + 1);
+      
+      if (temp.equals("html"))
+         contentType = "text/html";
+      else //content type is an image
+         contentType = "image/" + temp;
+         
+      return contentType;
+   } //end getContentType
 
 	/**
 	 * Read the HTTP request header.
@@ -93,8 +112,8 @@ public class WebWorker implements Runnable
             System.err.println("Request line: (" + line + ")");
             
             if (line.startsWith("GET")) {
-               file = new File("C:\\Users\\frank\\Documents\\School stuff\\CS371\\Programs-1\\SimpleWebServer" +
-                                 line.substring(4, line.indexOf("HTTP")));
+               file = new File("C:\\Users\\frank\\Documents\\School stuff\\CS371\\Programs-1\\SimpleWebServer\\www" +
+                                 line.substring(4, line.indexOf("HTTP") - 1));
             } //end if 
             
             if (line.length() == 0)
@@ -151,24 +170,35 @@ public class WebWorker implements Runnable
     * @param found
     *          is the status of whether the requested file was found or not
 	 **/
-   private void writeContent(OutputStream os, boolean found, File file) throws Exception {
-   
-      //System.out.println(file.length());
+   private void writeContent(OutputStream os, boolean found, String contentType, File file) throws Exception {
+      
       if (found) { 
-         if (file.length() == 0) { //found and empty
-            os.write("<html><head></head><body>\n".getBytes());
-            os.write(("<h3>My web server works!</h3>\n").getBytes());
-            os.write("</body></html>\n".getBytes());
-         } //end if
-         else { //found and not empty
-            Scanner filescan = new Scanner(file);
-            String input;
-            while (filescan.hasNext()) {
-               input = filescan.nextLine();
-               input = replaceTags(input);
-               os.write(input.getBytes());
-            } //end while
-         } //end else
+         switch (contentType) {
+            case "text/html":
+               Scanner filescan = new Scanner(file);
+               String input;
+               while (filescan.hasNext()) {
+                  input = filescan.nextLine();
+                  input = replaceTags(input);
+                  os.write(input.getBytes());
+               } //end while
+               break;
+            case "image/png":
+            case "image/jpg":
+            case "image/gif":
+               FileInputStream image = new FileInputStream(file);
+               
+               os.write(image.readAllBytes());
+               
+               
+               break;
+               
+            default:
+               os.write("<html><head></head><body>\n".getBytes());
+               os.write(("<h3>My web server works!</h3>\n").getBytes());
+               os.write("</body></html>\n".getBytes());
+               break;
+         } //end switch
       } //end if
       else { //not found
          os.write("<html><head></head><body>\n".getBytes());
