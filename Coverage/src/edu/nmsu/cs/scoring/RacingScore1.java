@@ -1,4 +1,4 @@
-package src.edu.nmsu.cs.scoring;
+package edu.nmsu.cs.scoring;
 
 /***
  * Olympic Dragon Racing Scoring Class
@@ -42,6 +42,7 @@ public class RacingScore1
 			s = score2;
 		else
 			s = score1;
+
 		if (s > score3)
 			s = score3;
 		s = (score1 + score2 + score3) - s;
@@ -51,22 +52,23 @@ public class RacingScore1
 	public static void main(String args[])
 	{
 		int s1, s2, s3;
-		if (args.length != 3)
-		{
+
+		if (args.length != 3) {
 			System.err.println("Error: must supply three arguments!");
 			return;
-		}
-		try
-		{
+		} //end if
+
+		try {
 			s1 = Integer.parseInt(args[0]);
 			s2 = Integer.parseInt(args[1]);
 			s3 = Integer.parseInt(args[2]);
-		}
-		catch (Exception e)
-		{
+		} //end try
+
+		catch (Exception e) {
 			System.err.println("Error: arguments must be integers!");
 			return;
-		}
+		} //end catch
+
 		RacingScore1 score = new RacingScore1();
 		score.recordScores(s1, s2, s3);
 		System.out.println("Overall score: " + score.overallScore());

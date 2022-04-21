@@ -1,0 +1,34 @@
+1)  I had to change the packages of both .java files to edu.nmsu.cs.scoring. this was the only way jacoco would work properly
+
+2)  In RacingScore2, i had to change 
+
+		else if (score2 < score1 && score2 < score3) {
+			s1 = score1;
+			s2 = score2;
+		} //end else if
+
+    to 
+
+		else if (score2 < score1 && score2 < score3) {
+			s1 = score1;
+			s2 = score3;
+		} //end else if
+    because the output was not correct
+
+3)  In RacingScore2, I changed
+
+        else {
+			s1 = 99;
+			s2 = 99;
+		} //end else
+    
+    to
+
+    	else {
+			s1 = score1;
+			s2 = score2;
+		} //end else
+
+    because the output should be the sum of any two of the 3 inputs as if the program gets to this point, it means all 3 inputs are equal. 
+
+4) I dont believe it is possible to set args to null with an ant file. Therefore i was only able to get 96% on RacingScore2.

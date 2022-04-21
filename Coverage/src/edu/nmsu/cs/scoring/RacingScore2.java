@@ -1,4 +1,4 @@
-package src.edu.nmsu.cs.scoring;
+package edu.nmsu.cs.scoring;
 
 /***
  * Olympic Dragon Racing Scoring Class
@@ -37,26 +37,23 @@ public class RacingScore2
 	public int overallScore()
 	{
 		int s, s1, s2;
-		if (score1 < score2 && score1 < score3)
-		{
+		if (score1 < score2 && score1 < score3)	{
 			s1 = score2;
 			s2 = score3;
-		}
-		else if (score2 < score1 && score2 < score3)
-		{
+		} //end if
+		else if (score2 < score1 && score2 < score3) {
+			s1 = score1;
+			s2 = score3;
+		} //end else if
+		else if (score3 < score1 && score3 < score2) {
 			s1 = score1;
 			s2 = score2;
-		}
-		else if (score3 < score1 && score3 < score2)
-		{
+		} //end else if
+		else {
 			s1 = score1;
 			s2 = score2;
-		}
-		else
-		{
-			s1 = 99;
-			s2 = 99;
-		}
+		} //end else
+
 		s = s1 + s2;
 		return s;
 	}
@@ -64,6 +61,7 @@ public class RacingScore2
 	public static void main(String args[])
 	{
 		int s1, s2, s3;
+		System.out.println(args[0]);
 		if (args == null || args.length != 3)
 		{
 			System.err.println("Error: must supply three arguments!");
