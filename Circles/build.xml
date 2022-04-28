@@ -1,0 +1,66 @@
+<project name="Circles" basedir = ".">
+
+	<!-- directory configuration - if things are not working, start troubleshooting from here -->
+	<property name = "dir" location="src/" />
+	<property name = "build.dir" location="bin/" />
+	<property name = "junit.dir" location = "lib/" />
+	<property name = "rep.dir" location = "rep/" />
+
+	<path id = "junitpath">
+		<fileset dir="${junit.dir}">
+			<include name="**/*.jar"/>
+		</fileset>
+		<pathelement location="${build.dir}"/>
+	</path>
+
+	<!-- standard compile task, but turn debugging on for source viewing -->
+	<target name="compile" description="compile the source">
+		<mkdir dir="${build.dir}" />
+		<javac srcdir="${dir}" destdir="${build.dir}" includeantruntime="false">
+			<classpath refid = "junitpath" />
+		</javac>
+	</target>
+
+	<target name = "run" depends = "clean, compile" >
+		<java classname = "edu.nmsu.cs.circles.CircleRun" classpath = "${build.dir}" fork = "true" >
+			<arg value = "1" />
+			<arg value = "1" />
+			<arg value = "1" />
+			<arg value = "1" />
+			<arg value = "1" />
+			<arg value = "1" />
+		</java>
+	</target>
+
+	<!-- official test example, merged with our code -->
+	<target name="test" depends="Circle1Test, Circle2Test">
+	</target>
+
+	<target name = "Circle1Test" depends = "compile">
+		<mkdir dir = "${rep.dir}" />
+		<junit haltonfailure = "false" haltonerror = "false" printsummary = "true">
+			<classpath refid = "junitpath" />
+			<test name = "edu.nmsu.cs.circles.Circle1Test" todir = "${rep.dir}" />
+			<formatter type = "plain" />
+		</junit>
+	</target>
+
+	<target name = "Circle2Test" depends = "compile">
+		<mkdir dir = "${rep.dir}" />
+		<junit haltonfailure = "false" haltonerror = "false" printsummary = "true">
+			<classpath refid = "junitpath" />
+			<test name = "edu.nmsu.cs.circles.Circle2Test" todir = "${rep.dir}" />
+			<formatter type = "plain" />
+		</junit>
+	</target>
+
+
+	<!-- clean up by removing all generated files; do "ant clean" to start afresh -->
+  	<target name = "clean">
+    	<!-- Delete the ${build} -->
+    	<delete dir="${build.dir}"/>
+		<delete dir = "${rep.dir}"/>
+  	</target>
+
+</project>
+
